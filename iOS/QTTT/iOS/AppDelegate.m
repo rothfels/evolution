@@ -11,6 +11,17 @@
 
 #import "RCTRootView.h"
 
+#import "ABYServer.h"
+#import "ABYContextManager.h"
+#import "BTHContextExecutor.h"
+
+@interface AppDelegate()
+
+@property (strong, nonatomic) ABYServer* replServer;
+@property (strong, nonatomic) ABYContextManager* contextManager;
+
+@end
+
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
@@ -43,18 +54,72 @@
    * see http://facebook.github.io/react-native/docs/runningondevice.html
    */
 
-//   jsCodeLocation = [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
+   //jsCodeLocation = [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
 
-  RCTRootView *rootView = [[RCTRootView alloc] initWithBundleURL:jsCodeLocation
-                                                      moduleName:@"QTTT"
-                                                   launchOptions:launchOptions];
+  //RCTRootView *rootView = [[RCTRootView alloc] initWithBundleURL:jsCodeLocation
+  //                                                    moduleName:@"QTTT"
+  //                                                 launchOptions:launchOptions];
+  
+  NSURL* compilerOutputDirectory = [[self privateDocumentsDirectory] URLByAppendingPathComponent:@"cljs-out"];
+  [self createDirectoriesUpTo:compilerOutputDirectory];
+  
+  // Set up our context
+  self.contextManager = [[ABYContextManager alloc] initWithContext:[[JSContext alloc] init]
+                                           compilerOutputDirectory:compilerOutputDirectory];
+  [self.contextManager setUpAmblyImportScript];
+  
+  // Inject our context into the BTHContextExecutor (it sets the static variable)
+  [BTHContextExecutor setContext:self.contextManager.context];
+  
+  // Set React Native to intstantiate our BTHContextExecutor, doing this by slipping the executorClass
+  // assignement between alloc and initWithBundleURL:moduleProvider:launchOptions:
+  RCTBridge *bridge = [RCTBridge alloc];
+  bridge.executorClass = [BTHContextExecutor class];
+  bridge = [bridge initWithBundleURL:jsCodeLocation
+                      moduleProvider:nil
+                       launchOptions:launchOptions];
+  
+  // Set up a root view using the bridge defined above
+  RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge
+                                                   moduleName:@"QTTT"];
 
   self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
   UIViewController *rootViewController = [[UIViewController alloc] init];
   rootViewController.view = rootView;
   self.window.rootViewController = rootViewController;
   [self.window makeKeyAndVisible];
+  
+  // Now that React Native has been initialized, fire up our REPL server
+  self.replServer = [[ABYServer alloc] initWithContext:self.contextManager.context
+                               compilerOutputDirectory:compilerOutputDirectory];
+  BOOL successful = [self.replServer startListening];
+  if (!successful) {
+    NSLog(@"Failed to start REPL server.");
+  }
+
   return YES;
+}
+
+- (NSURL *)privateDocumentsDirectory
+{
+  NSURL *libraryDirectory = [[[NSFileManager defaultManager] URLsForDirectory:NSLibraryDirectory inDomains:NSUserDomainMask] lastObject];
+  
+  return [libraryDirectory URLByAppendingPathComponent:@"Private Documents"];
+}
+
+- (void)createDirectoriesUpTo:(NSURL*)directory
+{
+  if (![[NSFileManager defaultManager] fileExistsAtPath:[directory path]]) {
+    NSError *error = nil;
+    
+    if (![[NSFileManager defaultManager] createDirectoryAtPath:[directory path]
+                                   withIntermediateDirectories:YES
+                                                    attributes:nil
+                                                         error:&error]) {
+      NSLog(@"Can't create directory %@ [%@]", [directory path], error);
+      abort();
+    }
+  }
 }
 
 @end
