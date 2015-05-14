@@ -12,3 +12,6 @@ pom.xml.asc
 /resources/public/gen
 .idea
 *.iml
+iOS/QTTT/Pods
+iOS/QTTT/Podfile.lock
+iOS/QTTT/QTTT.xcworkspace
