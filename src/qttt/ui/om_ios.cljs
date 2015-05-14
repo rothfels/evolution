@@ -44,9 +44,8 @@
       "~"
       " ")
     (if (= 0 player)
-      (if focus "%" "+")
-      (if focus "@" "O"))
-    turn))
+      "+"
+      "O")))
 
 (defn entanglement
   "Om component for an individual entanglement"
@@ -66,7 +65,14 @@
                                #(game/speculate % cell subcell)))
                :onPressOut (fn [evt]
                              (om/transact! game-cursor game/unspeculate))}
-          (text #js {:style #js {:bold-font true}} (if (empty? e) " _ " (mark-text e)))
+          (view #js {:style #js {:flexDirection   "row"
+                                 :margin          5
+                                 :backgroundColor "#EE1EEE"
+                                 :justifyContent  "center"}}
+            (text #js {:style #js {:fontWeight (if (:focus e) "bold" "normal")}}
+              (if (empty? e) " _ " (mark-text e)))
+            (text #js {:style #js {:fontSize 6 :fontWeight (if (:focus e) "bold" "normal")}}
+              (:turn e)))
           #_(css-transition-group #js {:transitionName "mark-transition"}
             (when-not (empty? e) (mark e))))))))
 
