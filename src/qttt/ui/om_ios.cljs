@@ -49,6 +49,10 @@
       (view #js {:className (class-name "fa" icon)})
       (view #js {:className "turn"} turn))))
 
+(defn mark-text
+  [{:keys [player turn focus collapsing]}]
+  (if (= 0 player) "+" "O"))
+
 (defn entanglement
   "Om component for an individual entanglement"
   [e owner]
@@ -57,16 +61,17 @@
     (reify
       om/IRender
       (render [this]
-        (touchable-without-feedback #js {:className    (class-name (if (empty? e) "empty-mark" "spooky-mark"))
-                   :onPress      (fn [evt]
-                                   (om/transact! game-cursor
-                                     #(game/play (game/unspeculate %) cell subcell)))
-                   :onPressIn (fn [evt]
-                                   (om/transact! game-cursor
-                                     #(game/speculate % cell subcell)))
-                   :onPressOut (fn [evt]
-                                   (om/transact! game-cursor game/unspeculate))}
-          (text nil (if (empty? e) "e" "m"))
+        (touchable-without-feedback
+          #js {:className  (class-name (if (empty? e) "empty-mark" "spooky-mark"))
+               :onPress    (fn [evt]
+                             (om/transact! game-cursor
+                               #(game/play (game/unspeculate %) cell subcell)))
+               :onPressIn  (fn [evt]
+                             (om/transact! game-cursor
+                               #(game/speculate % cell subcell)))
+               :onPressOut (fn [evt]
+                             (om/transact! game-cursor game/unspeculate))}
+          (text nil (if (empty? e) "_" (mark-text e)))
           #_(css-transition-group #js {:transitionName "mark-transition"}
             (when-not (empty? e) (mark e))))))))
 
@@ -116,18 +121,22 @@
             player-classes (if (zero? player)
                              ["player-x" "fa-plus"]
                              ["player-o" "fa-circle-o"])]
-        (text #js {:className "instructions"}
+        (text #js {:className "instructions"
+                   :style     #js {:flexDirection   "row"
+                                   :margin          10
+                                   :backgroundColor "#EE1EEE"
+                                   :justifyContent  "center"}}
           #_(view #js {:className (apply class-name "mark" "fa" player-classes)})
-          (str "'s turn: " phase))))))
+          (str (if (zero? player) "+" "O") "'s turn: " phase))))))
 
 (defn board [game owner]
   (reify
     om/IRender
     (render [this]
       (view #js {:className "board-container"
-                 :style     #js {:flexDirection   "row"
+                 :style     #js {:flexDirection   "column"
                                  :margin          40
-                                 :backgroundColor "#EE1EEE"
+                                 :backgroundColor "#0E1EEE"
                                  :justifyContent  "center"}}
         (om/build instructions game)
         (apply table #js {:className "board"
@@ -138,7 +147,7 @@
           (map (fn [row]
                  (apply tr {:style #js {:flexDirection   "row"
                                         :margin          40
-                                        :backgroundColor "#EE1EEE"
+                                        :backgroundColor "#EE1EE1"
                                         :justifyContent  "center"}}
                    (map (fn [idx]
                           (om/build cell
