@@ -18,4 +18,8 @@
                                         :source-map true
                                         :foreign-libs [{:file-min "cljsjs/development/react-with-addons.inc.js",
                                                         :file "cljsjs/development/react-with-addons.inc.js",
-                                                        :provides ["cljsjs.react"]}]}}}})
+                                                        :provides ["cljsjs.react"]}]}}
+                       :ios {:source-paths ["src"]
+                             :compiler {:output-to "target/out/main.js"
+                                        :output-dir "target/out"
+                                        :optimizations :none}}}})
