@@ -17,18 +17,6 @@
   [opts & children]
   (apply js/React.createElement js/React.Text opts children))
 
-(defn table
-  [opts & children]
-  (apply js/React.createElement js/React.View opts children))
-
-(defn tr
-  [opts & children]
-  (apply js/React.createElement js/React.View opts children))
-
-(defn a
-  [opts & children]
-  (apply js/React.createElement js/React.View opts children))
-
 (defn touchable-without-feedback
   [opts & children]
   (apply js/React.createElement js/React.TouchableWithoutFeedback opts children))
@@ -51,7 +39,14 @@
 
 (defn mark-text
   [{:keys [player turn focus collapsing]}]
-  (if (= 0 player) "+" "O"))
+  (str
+    (if collapsing
+      "~"
+      " ")
+    (if (= 0 player)
+      (if focus "%" "+")
+      (if focus "@" "O"))
+    turn))
 
 (defn entanglement
   "Om component for an individual entanglement"
@@ -71,7 +66,7 @@
                                #(game/speculate % cell subcell)))
                :onPressOut (fn [evt]
                              (om/transact! game-cursor game/unspeculate))}
-          (text nil (if (empty? e) "_" (mark-text e)))
+          (text #js {:style #js {:bold-font true}} (if (empty? e) " _ " (mark-text e)))
           #_(css-transition-group #js {:transitionName "mark-transition"}
             (when-not (empty? e) (mark e))))))))
 
@@ -82,12 +77,12 @@
     om/IRender
     (render [this]
       (view #js {:className (class-name "superposition")}
-        (apply table #js {:style #js {:flexDirection   "row"
-                                      :margin          40
+        (apply view #js {:style #js {:flexDirection   "row"
+                                      :margin          10
                                       :backgroundColor "#EE1EEE"
                                       :justifyContent  "center"}}
           (map (fn [row]
-                 (apply tr nil
+                 (apply view nil
                    (map (fn [idx]
                           ;; Make sure were have a valid cursor
                           (let [e (get-in cell [:entanglements idx]
@@ -121,13 +116,15 @@
             player-classes (if (zero? player)
                              ["player-x" "fa-plus"]
                              ["player-o" "fa-circle-o"])]
-        (text #js {:className "instructions"
-                   :style     #js {:flexDirection   "row"
-                                   :margin          10
-                                   :backgroundColor "#EE1EEE"
-                                   :justifyContent  "center"}}
-          #_(view #js {:className (apply class-name "mark" "fa" player-classes)})
-          (str (if (zero? player) "+" "O") "'s turn: " phase))))))
+        (view #js {:style #js {:flexDirection "row"
+                               :justifyContent "center"}}
+          (text #js {:className "instructions"
+                    :style     #js {:flexDirection   "row"
+                                    :margin          20
+                                    :backgroundColor "#EE1EEE"
+                                    :justifyContent  "center"}}
+           #_(view #js {:className (apply class-name "mark" "fa" player-classes)})
+           (str (if (zero? player) "+" "O") "'s turn: " phase)))))))
 
 (defn board [game owner]
   (reify
@@ -135,37 +132,39 @@
     (render [this]
       (view #js {:className "board-container"
                  :style     #js {:flexDirection   "column"
-                                 :margin          40
+                                 :margin          10
                                  :backgroundColor "#0E1EEE"
                                  :justifyContent  "center"}}
         (om/build instructions game)
-        (apply table #js {:className "board"
+        (apply view #js {:className "board"
                           :style     #js {:flexDirection   "row"
-                                          :margin          40
+                                          :margin          10
                                           :backgroundColor "#EE1EEE"
                                           :justifyContent  "center"}}
           (map (fn [row]
-                 (apply tr {:style #js {:flexDirection   "row"
-                                        :margin          40
+                 (apply view {:style #js {:flexDirection   "row"
+                                        :margin          10
+                                        :width           "30px"
                                         :backgroundColor "#EE1EE1"
                                         :justifyContent  "center"}}
                    (map (fn [idx]
                           (om/build cell
                             (get-in game [:board idx]))) row)))
             (partition 3 (range 9))))
-        (view #js {:className "repo-link"}
-          (text #js {:href "http://github.com/levand/qttt"}
-            "http://github.com/levand/qttt"))))))
+        (text #js {:flexDirection   "row"
+                   :margin          10
+                   :backgroundColor "#EE1EEE"
+                   :justifyContent  "center"}
+          "http://github.com/levand/qttt")))))
 
 (defn screen [game owner]
   (reify
     om/IRender
     (render [this]
-      (view #js {:className "play-area"
-                 :style     #js {:flexDirection   "row"
-                                 :margin          40
-                                 :backgroundColor "#EE1EEE"
-                                 :justifyContent  "center"}}
+      (view #js {:style #js {:flexDirection   "row"
+                             :margin          10
+                             :backgroundColor "#EE1EEE"
+                             :justifyContent  "center"}}
         (om/build board game)))))
 
 
