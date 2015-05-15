@@ -42,3 +42,12 @@ Ideas for future expansion include:
 - Win condition detection
 - Network multiplayer
 - AI
+
+# React Native Port
+
+1. From the top level run `lein cljsbuild once ios`.
+2. `cd iOS/QTTT`
+3. `npm install`
+4. `pod install`
+5. `open QTTT.xcworkspace`
+6. Run on a simulator (iPhone 6 works great)
