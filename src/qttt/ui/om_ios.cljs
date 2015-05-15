@@ -20,20 +20,16 @@
   (apply js/React.createElement js/React.TouchableWithoutFeedback opts children))
 
 (defn mark-text
-  [{:keys [player turn focus collapsing]}]
-  (str
-    (if collapsing
-      "~"
-      " ")
-    (if (= 0 player)
-      "+"
-      "O")))
+  [{:keys [player]}]
+  (if (= 0 player)
+    "\u2795"
+    "\u2B55"))
 
 (defn mark-color
   [e]
   (if (zero? (:player e))
-    "orange"
-    "yellow"))
+    "#FFC929"
+    "#FF6629"))
 
 (defn entanglement
   "Om component for an individual entanglement"
@@ -52,13 +48,18 @@
                                #(game/speculate % cell subcell)))
                :onPressOut (fn [evt]
                              (om/transact! game-cursor game/unspeculate))}
-          (view #js {:style #js {:flexDirection  "row"
-                                 :width          30
-                                 :height         30
-                                 :justifyContent "center"}}
-            (text #js {:style #js {:color (mark-color e) :fontWeight (if (:focus e) "bold" "normal")}}
-              (if (empty? e) " _ " (mark-text e)))
-            (text #js {:style #js {:color (mark-color e) :fontSize 6 :fontWeight (if (:focus e) "bold" "normal")}}
+          (view #js {:style #js {:flexDirection   "row"
+                                 :width           30
+                                 :height          30
+                                 :justifyContent  "center"
+                                 :borderRadius    3
+                                 :backgroundColor (cond
+                                                    (:focus e) "#333333"
+                                                    (:collapsing e) "#224433"
+                                                    :else "black")}}
+            (text #js {:style #js {:color (mark-color e) :fontSize 18 :fontWeight (if (:focus e) "bold" "normal")}}
+              (if (empty? e) "" (mark-text e)))
+            (text #js {:style #js {:color "grey" :fontSize 6}}
               (:turn e))))))))
 
 (defn superposition
@@ -69,8 +70,8 @@
     (render [this]
       (view nil
         (apply view #js {:style #js {:flexDirection  "row"
-                                     :borderColor    "blue"
-                                     :borderWidth    3
+                                     :borderColor    "#2675B1"
+                                     :borderWidth    1
                                      :justifyContent "center"}}
           (map (fn [row]
                  (apply view nil
@@ -89,9 +90,17 @@
   (reify
     om/IRender
     (render [this]
-      (view #js {:className "classical"}
-        (text #js {:style #js {:color (mark-color (:classical cell)) :fontSize 40 :width 90 :height 90}}
-          (mark-text (:classical cell)))))))
+      (view #js {:style #js {:flexDirection  "row"
+                             :borderColor    "#2675B1"
+                             :borderWidth    1
+                             :justifyContent "center"
+                             :width          92
+                             :height         92
+                             :padding        5}}
+        (text #js {:style #js {:textAlign "center" :color (mark-color (:classical cell)) :fontSize 60}}
+          (mark-text (:classical cell)))
+        (text #js {:style #js {:fontSize 8 :color "grey"}}
+          (:turn (:classical cell)))))))
 
 (defn cell
   "Om component for a square"
@@ -104,19 +113,14 @@
   (reify
     om/IRender
     (render [this]
-      (let [[player phase] (game/instructions game)
-            player-classes (if (zero? player)
-                             ["player-x" "fa-plus"]
-                             ["player-o" "fa-circle-o"])]
+      (let [[player phase] (game/instructions game)]
         (view #js {:style #js {:flexDirection  "row"
                                :justifyContent "center"}}
-          (text #js {:style #js {:flexDirection   "row"
-                                 :margin          20
-                                 :color           "white"
-                                 :backgroundColor "#EE1EEE"
-                                 :textAlign       "center"}}
-            #_(view #js {:className (apply class-name "mark" "fa" player-classes)})
-            (str (if (zero? player) "+" "O") "'s turn: " phase)))))))
+          (text #js {:style #js {:flexDirection "row"
+                                 :margin        20
+                                 :color         "#6DA6D2"
+                                 :textAlign     "center"}}
+            (str (if (zero? player) "\u2795" "\u2B55") "'s turn: " phase)))))))
 
 (defn board [game owner]
   (reify
@@ -124,7 +128,9 @@
     (render [this]
       (view nil
         (om/build instructions game)
-        (apply view #js {:style #js {:flexDirection "row"}}
+        (apply view #js {:style #js {:flexDirection "row"
+                                     :borderColor   "#2675B1"
+                                     :borderWidth   1}}
           (map (fn [row]
                  (apply view {:style #js {:flexDirection "row"}}
                    (map (fn [idx]
