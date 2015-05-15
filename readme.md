@@ -51,3 +51,7 @@ Ideas for future expansion include:
 4. `pod install`
 5. `open QTTT.xcworkspace`
 6. Run on a simulator (iPhone 6 works great)
+
+## REPL
+
+If you'd like to connect to the iOS app using a REPL, run `script/ambly-repl`.
