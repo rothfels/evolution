@@ -55,3 +55,8 @@ Ideas for future expansion include:
 ## REPL
 
 If you'd like to connect to the iOS app using a REPL, run `script/ambly-repl`.
+
+## Demo
+
+
+[Watch a quick demo](https://youtu.be/7HtOTzllwTY) of it running on iOS.
