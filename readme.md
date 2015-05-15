@@ -60,5 +60,6 @@ If you'd like to connect to the iOS app using a REPL, run `script/ambly-repl`.
 
 ## Demo
 
+Watch a quick demo of it running on iOS:
 
-[Watch a quick demo](https://youtu.be/7HtOTzllwTY) of it running on iOS.
+[![QTTT](http://img.youtube.com/vi/7HtOTzllwTY/0.jpg)](https://www.youtube.com/watch?v=7HtOTzllwTY "Quantum Tic Tac Toe React Native Port")
