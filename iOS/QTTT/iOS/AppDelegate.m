@@ -24,6 +24,11 @@
 
 @implementation AppDelegate
 
+-(void)requireAppNamespaces:(JSContext*)context
+{
+  [context evaluateScript:@"goog.require('qttt.ui.om_ios');"];
+}
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
   NSURL *jsCodeLocation;
@@ -60,8 +65,23 @@
   //                                                    moduleName:@"QTTT"
   //                                                 launchOptions:launchOptions];
   
+  // Set up the compiler output directory
   NSURL* compilerOutputDirectory = [[self privateDocumentsDirectory] URLByAppendingPathComponent:@"cljs-out"];
-  [self createDirectoriesUpTo:compilerOutputDirectory];
+  
+  // Ensure private documents directory exists
+  [self createDirectoriesUpTo:[self privateDocumentsDirectory]];
+  
+  // Copy resources from bundle "out" to compilerOutputDirectory
+  
+  NSFileManager* fileManager = [NSFileManager defaultManager];
+  fileManager.delegate = self;
+  
+  // First blow away old compiler output directory
+  [fileManager removeItemAtPath:compilerOutputDirectory.path error:nil];
+  
+  // Copy files from bundle to compiler output driectory
+  NSString *outPath = [[NSBundle mainBundle] pathForResource:@"out" ofType:nil];
+  [fileManager copyItemAtPath:outPath toPath:compilerOutputDirectory.path error:nil];
   
   // Set up our context
   self.contextManager = [[ABYContextManager alloc] initWithContext:[[JSContext alloc] init]
@@ -82,7 +102,23 @@
   // Set up a root view using the bridge defined above
   RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge
                                                    moduleName:@"QTTT"];
-
+  
+  NSString* mainJsFilePath = [[compilerOutputDirectory URLByAppendingPathComponent:@"main" isDirectory:NO] URLByAppendingPathExtension:@"js"].path;
+  
+  NSURL* googDirectory = [compilerOutputDirectory URLByAppendingPathComponent:@"goog"];
+  
+  [self.contextManager bootstrapWithDepsFilePath:mainJsFilePath
+                                    googBasePath:[[googDirectory URLByAppendingPathComponent:@"base" isDirectory:NO] URLByAppendingPathExtension:@"js"].path];
+  
+  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+     [self requireAppNamespaces:self.contextManager.context];
+    
+    JSValue* initFn = [self getValue:@"main" inNamespace:@"qttt.ui.om-ios" fromContext:self.contextManager.context];
+    NSAssert(!initFn.isUndefined, @"Could not find the app init function");
+    [initFn callWithArguments:@[]];
+    
+  });
+ 
   self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
   UIViewController *rootViewController = [[UIViewController alloc] init];
   rootViewController.view = rootView;
@@ -120,6 +156,27 @@
       abort();
     }
   }
+}
+
+- (JSValue*)getValue:(NSString*)name inNamespace:(NSString*)namespace fromContext:(JSContext*)context
+{
+  JSValue* namespaceValue = nil;
+  for (NSString* namespaceElement in [namespace componentsSeparatedByString: @"."]) {
+    if (namespaceValue) {
+      namespaceValue = namespaceValue[[self munge:namespaceElement]];
+    } else {
+      namespaceValue = context[[self munge:namespaceElement]];
+    }
+  }
+  
+  return namespaceValue[[self munge:name]];
+}
+
+- (NSString*)munge:(NSString*)s
+{
+  return [[[s stringByReplacingOccurrencesOfString:@"-" withString:@"_"]
+           stringByReplacingOccurrencesOfString:@"!" withString:@"_BANG_"]
+          stringByReplacingOccurrencesOfString:@"?" withString:@"_QMARK_"];
 }
 
 @end
