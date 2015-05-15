@@ -13,6 +13,8 @@ three front-ends written using different UI libraries:
 - [Reagent](http://reagent-project.github.io)
 - [Quiescent](https://github.com/levand/quiescent)
 
+And, additionally in this fork, a port to React Native, based on the Om binding. (See the section at the bottom.)
+
 ## Running the Program
 
 Note: QTTT depends on a library, `com.cognitect/contextual` that may not yet
