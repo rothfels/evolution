@@ -4,7 +4,7 @@
                  [org.clojure/clojurescript "0.0-3196"]
                  [reagent "0.5.0" :exclusions [cljsjs/react]]
                  [org.omcljs/om "0.8.8":exclusions [cljsjs/react]]
-                 [org.omcljs/ambly "0.2.0"]
+                 [org.omcljs/ambly "0.3.0"]
                  [cljsjs/react-with-addons "0.12.2-7"]
                  [quiescent "0.2.0-alpha1"]
                  [com.cognitect/contextual "0.1.0"]]
