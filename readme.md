@@ -1,51 +1,21 @@
-# Quantum Tic Tac Toe
+# Conways Game of Life
 
 For rules on the game itself, see the
-[Wikipedia article](http://en.wikipedia.org/wiki/Quantum_tic-tac-toe)
-or the original
-[paper](http://qttt.googlecode.com/files/QT3-AJP%2010-20-06.pdf)
-published in the American Journal of Physics.
+[Wikipedia article](http://en.wikipedia.org/wiki/Conway%27s_Game_of_Life).
 
-This implementation is written in ClojureScript and ReactJS, and has
-three front-ends written using different UI libraries:
+This implementation is written in ClojureScript and ReactJS (native) with the help of [Om](https://github.com/omcljs/om)
 
-- [Om](https://github.com/omcljs/om)
-- [Reagent](http://reagent-project.github.io)
-- [Quiescent](https://github.com/levand/quiescent)
+## Overview
 
-And, additionally in this fork, a port to React Native, based on the Om binding. (See the section at the bottom.)
+The logic for the game of life is in `src/qttt/life.cljs`. This file also contains the intial application (board) state.
+
+UI components live in `src/qttt/ui/om_ios.cljs`.
+
+Currently, there's a toggle to stop/start time and a slider to control the speed of time's progression.
+
+If you click on any cell, you will switch the value of that cell.
 
 ## Running the Program
-
-Note: QTTT depends on a library, `com.cognitect/contextual` that may not yet
-be in public repositories. If not, you can install the dependency locally by cloning
-`https://github.com/levand/contextual.git` and running `lein install` in that repository.
-
-First, compile the ClojureScript:
-
-`lein cljsbuild`
-
-Then, visit the HTML page at `resources/public/dev.html`.
-
-You will need to select which UI library to view by passing a `lib`
-URL parameter. For example:
-
-- `dev.html?lib=om`
-- `dev.html?lib=reagent`
-- `dev.html?lib=quiescent`
-
-Play proceeds in turns. There is no win condition detection, yet, but
-all the other rules of the game are in place.
-
-## Future Ideas
-
-Ideas for future expansion include:
-
-- Win condition detection
-- Network multiplayer
-- AI
-
-# React Native Port
 
 1. From the top level run `lein cljsbuild once ios`.
 2. `cd iOS/QTTT`
@@ -56,10 +26,5 @@ Ideas for future expansion include:
 
 ## REPL
 
-If you'd like to connect to the iOS app using a REPL, run `script/ambly-repl`.
+If you'd like to connect to the iOS app (running in the emulator) using a REPL, run `script/ambly-repl`. Have fun!
 
-## Demo
-
-Watch a quick demo of it running on iOS:
-
-[![QTTT](http://img.youtube.com/vi/7HtOTzllwTY/0.jpg)](https://www.youtube.com/watch?v=7HtOTzllwTY "Quantum Tic Tac Toe React Native Port")
