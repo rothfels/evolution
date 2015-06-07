@@ -1,4 +1,4 @@
-# Conways Game of Life
+# Conway's Game of Life
 
 For rules on the game itself, see the
 [Wikipedia article](http://en.wikipedia.org/wiki/Conway%27s_Game_of_Life).
